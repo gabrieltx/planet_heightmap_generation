@@ -78,6 +78,11 @@ Once a world is finished, upstream's finish provides, per cell or per pixel:
 
 ## Roadmap for the political and game layers
 
+**Existing work to bring in:** `orogen-map-editor.html` already does border drawing and area naming. It is a standalone
+editor that works on World Orogen PNG exports (heightmap, land mask, satellite, climate) of the planet with seed
+`0budfia1fa0sgsdyq7`, and sits in the owner's claude.ai "World Building" project with a locations reference PDF. It
+has never been in git. Once it's added to the repo, P0–P3 below should start from it instead of from scratch.
+
 Each phase must stand on its own and follow upstream's pillars and rules: looks first, mobile-friendly, and scale
 invariance (physical units, never cell hops).
 
