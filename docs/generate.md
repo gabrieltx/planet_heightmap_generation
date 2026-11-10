@@ -127,24 +127,38 @@ the tab.
 | Name | The place last clicked on the map (a country, a continent, an ocean or a sea): write its name. Emptied, it gets a made name again |
 
 - **Countries** (`politics/countries.js`): each continent gets its share of the countries, half by its land and half by
-  the people its land could feed (the finish's Food layer). Their first places are set where the land feeds the most
-  people, kept apart from each other. Each country then grows outward over its continent; the going costs more over
-  ground above 800 m and over land that feeds almost no one, so borders settle on mountain ranges and in deserts. Each
-  country grows with its own strength, so some are large and some small. Islands go to the nearest country of their
-  continent over the sea. Countries are coloured so that no two neighbours match, with a dark line along each border.
+  the people its land could feed (read from the finish's Food layer, `fin.raster.farming` and `fin.climate.raster`).
+  Their first places are set where the land feeds the most people (a little more on rivers), kept apart from each other.
+  Each country then grows outward over its continent, and what shapes the growth is the going:
+  - **Height and empty land**: the going costs more over ground above 800 m (up to three times at 3 km) and over land that
+    feeds almost no one, so borders settle on mountain ranges and in deserts.
+  - **Rivers** (the finish's, painted onto the cells: `riverFlow`): stepping onto or off a river costs a toll that grows
+    with its flow (a river counts from 500 m³/s, fully from 8,000), so a country stops at a big river and the next one
+    stops on the other bank. On the worlds checked, 45–60 % of borders run along a big river, against 17–30 % without
+    this. The Countries picture draws the finish's rivers over the borders (the view strip's Rivers & lakes shows or hides
+    them; they are thin).
+  - **A slow wobble** in the going, at two scales (about 1,300 and 500 km), keeps borders from being plain arcs.
+  - **Each country its own character**: a push drawn evenly in the log (a country twice as strong reaches twice as far:
+    big and small countries), and two in three stretch along one axis (across costs up to four times along: elongated
+    countries) while the rest grow round.
+
+  Islands go to the nearest country of their continent over the sea. Countries are coloured so that no two neighbours
+  match, with a dark line along each border.
 - **Two cultures on one continent**: the continent is divided between two places as far apart as its ground allows;
   each country goes with the one it reaches more easily, so the divide falls on the hardest ground to cross. The first
   culture takes the west, the second the east. On the Continents picture the eastern side is paler.
 - **Names** (`politics/names.js`): every name is invented from sounds and endings typical of its culture, never taken
-  from a list of real places; one that matches a real country is made again. A country is named in its own culture; a
-  continent in its first culture; an ocean or sea after the nearest continent's. No name is used twice on a world.
+  from a list of real places; one that matches a real country is made again. Names are short: a country's word is at
+  most 7 letters (the usual one 5 or 6), a continent's 8, a sea's or ocean's 6 (before "Sea" or "Ocean"). A country is
+  named in its own culture; a continent in its first culture; an ocean or sea after the nearest continent's. No name is
+  used twice on a world.
 - **Kept**: the cultures, the number of countries, the names you wrote and the names' draw are kept in this browser, by
   planet code. Reopening the planet brings its countries back. They are not in the planet code or link yet.
 - The hover card names the country (its culture, its size and the people its land could feed), the continent, or the
   ocean or sea. Click (tap) a place to pick it for renaming.
 
 Everything is measured in km and km², so a world is divided the same way at every Detail. `node
-politics/tools/check-lands.mjs` and `node politics/tools/check-countries.mjs` check it headless (`--png <folder>` also
+politics/tools/check-lands.mjs` and `node politics/tools/check-countries.mjs` check it headless (the countries check runs the real finish on each world, about 15 s each) (`--png <folder>` also
 saves each world's map).
 
 ## Mobile Support
@@ -276,10 +290,11 @@ politics/
   politics.js           The layer on the page: the Political tab and the side panel's Political section, the world's
                         political state (found, chosen, kept by planet code), and what the page's hooks call
   lands.js              A world's continents, oceans and seas from its ground (pure functions)
-  countries.js          Its countries: their share per continent, first places, growth by the cost of the going, islands,
-                        colours; the people a cell could feed (from the finish's food); a continent divided for two cultures
+  countries.js          Its countries: their share per continent, first places, growth by the cost of the going (height, empty
+                        land, rivers, wobble, each country's push and elongation), islands, colours; the people a cell could
+                        feed (from the finish's food) and the finish's rivers on the cells; a continent divided for two cultures
   names.js              The nine cultures, and the names made in each one's style
   political-view.js     The Political view: each cell's colour, the names over the picture, the legend, the hover's lines
   politics.css          The Political section's styles (tokens only)
-  tools/check-lands.mjs, check-countries.mjs   The headless checks, on Generate's worlds
+  tools/check-lands.mjs, check-countries.mjs   The headless checks, on Generate's worlds (the second runs the finish: tools/finish-headless.mjs)
 ```

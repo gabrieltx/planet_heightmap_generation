@@ -3,7 +3,7 @@
 //   · the world's continents, oceans and seas (lands.js), found from its ground as soon as it appears;
 //   · each continent's cultures — one or two of nine (names.js), set at random at first, the player's to change;
 //   · its countries (countries.js), generated on the button once the world is finished (they are set where its land
-//     could feed the most people: the finish's food) — as many as the slider asks;
+//     could feed the most people: the finish's food; their borders follow its rivers) — as many as the slider asks;
 //   · every name (names.js), in its culture's style, made with the countries; a place clicked on the map can be renamed,
 //     and a name written by the player is kept when the others are made again.
 // What the player chose is kept in the browser, by planet code: the cultures, the number of countries, the names
@@ -11,9 +11,9 @@
 // The page keeps its own world and loop; each hook in an upstream file is marked `// fork:`.
 
 import { findLands } from './lands.js';
-import { makeCountries, divideContinent, peoplePerCell, peopleGuess, rngOf, COUNTRIES } from './countries.js';
+import { makeCountries, divideContinent, peoplePerCell, peopleGuess, riverFlow, rngOf, COUNTRIES } from './countries.js';
 import { CULTURES, makeNames } from './names.js';
-import { politicalColors, drawPoliticalNames, politicalLegendHTML, politicalReadout, placeAt, continentRgb, continentName, seaName, countryName, million } from './political-view.js';
+import { politicalColors, drawPoliticalNames, drawPoliticalRivers, politicalLegendHTML, politicalReadout, placeAt, continentRgb, continentName, seaName, countryName, million } from './political-view.js';
 
 export const POLITICAL = 'political';
 const TIP = 'The world’s continents, oceans and seas, the cultures of its continents and its countries. Set them up under Political in the side panel';
@@ -75,9 +75,10 @@ export function mountPolitics({ pv, world = () => null, code = () => '', repaint
     }
     /** The world's countries generated, with their names. */
     function generate(w, pol) {
-        const fed = w.fin ? peoplePerCell(w.tMesh, w.fin.raster) : null;
+        const fed = w.fin ? peoplePerCell(w.tMesh, w.fin) : null;
         pol.fed = !!fed;
-        pol.P = makeCountries(w.tMesh, w.heightKm, pol.F, fed ?? peopleGuess(w.tMesh, w.heightKm), { count: pol.count, seed: w.seed });
+        w._riverFlow ??= w.fin?.rivers ? riverFlow(w.tMesh, w.fin.rivers) : null;       // (the finish's rivers, painted onto the cells once)
+        pol.P = makeCountries(w.tMesh, w.heightKm, pol.F, fed ?? peopleGuess(w.tMesh, w.heightKm), { count: pol.count, seed: w.seed, flow: w._riverFlow });
         pol.made = true; pol.show = 'countries'; pol.picked = null;
         rename(w, pol);
         save(pol); changed(pol);
@@ -183,9 +184,14 @@ export function mountPolitics({ pv, world = () => null, code = () => '', repaint
         /** The layer's colours per cell (true when the layer is this one). */
         cells: (layer, w, out, shade) => layer === POLITICAL && politicalColors(w.tMesh, politicsOf(w), out, shade),
         /** Its names over the picture. */
-        lines: (ctx, W, view, w) => { if (view.layer === POLITICAL && w) drawPoliticalNames(ctx, W, w.tMesh, politicsOf(w), view.mode !== 'map'); },
+        lines: (ctx, W, view, w) => {
+            if (view.layer !== POLITICAL || !w) return;
+            const pol = politicsOf(w);
+            if (pol.show === 'countries') drawPoliticalRivers(ctx, W, w.fin, view);      // (the rivers the borders follow: Rivers & lakes shows or hides them)
+            drawPoliticalNames(ctx, W, w.tMesh, pol, view.mode !== 'map');
+        },
         /** What its lines depend on (the page's overlay is drawn again when this changes). */
-        linesKey: (view, w) => (view.layer === POLITICAL && w ? `political|${view.mode}|${politicsOf(w).version}|${politicsOf(w).show}` : ''),
+        linesKey: (view, w) => (view.layer === POLITICAL && w ? `political|${view.mode}|${politicsOf(w).version}|${politicsOf(w).show}|${view.water}|${view.riverQ}|${w.fin ? 1 : 0}` : ''),
         /** Its legend into `el` (true when the layer is this one). */
         legend: (layer, w, el) => { if (layer !== POLITICAL) return false; const pol = politicsOf(w), key = `political|${w.version}|${pol.version}|${pol.show}`; if (el.dataset.key !== key) { el.innerHTML = politicalLegendHTML(pol); el.dataset.key = key; } return true; },
         /** The readout's lines for cell `c`, on this layer (or none). */

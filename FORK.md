@@ -133,11 +133,17 @@ Names come after cultures on purpose, so nothing is named twice.
 - **S2: Cultures.** Done (2026-11-10). The picker in the Political section; a continent of two is divided along its
   hardest ground to cross (`politics/countries.js` divideContinent). Each continent starts with one culture drawn by the
   seed, so the flow works with no clicks.
-- **S3: Borders.** Done (2026-11-10). `politics/countries.js` (how: `docs/generate.md`, "The Political view"), checked
-  by `node politics/tools/check-countries.mjs`. Known limits: rivers do not shape borders yet; the countries are made
-  on the page's thread (a short freeze at the highest Details); the choices are kept in the browser by planet code, not
-  in the planet code or link.
-- **S4: Names.** Done (2026-11-10). `politics/names.js`: nine styles, made with the countries, written names kept.
+- **S3: Borders.** Done (2026-11-10), reworked the same day: borders follow the finish's rivers (a toll to step onto or
+  off one), the going has a slow wobble, and each country has its own strength and elongation, because the first version
+  made countries too alike. `politics/countries.js` (how: `docs/generate.md`, "The Political view"), checked by `node
+  politics/tools/check-countries.mjs` on real finishes. Also fixed: the first version never read the finish's food (it
+  looked for the land's climate in the wrong place and fell back to a guess from latitude and height). Known limits:
+  rivers shape borders only on a finished world (the button waits for the finish); the countries are made on the page's
+  thread (about 0.6 s at 204K cells); the choices are kept in the browser by planet code, not in the planet code or link;
+  a country's written name is kept by its first place's cell, which moved when the countries were reworked, so names
+  written before are lost (continent and sea names are kept).
+- **S4: Names.** Done (2026-11-10), shortened the same day (a country's word at most 7 letters, usually 5 or 6; before, the
+  median was 8 and some ran to 15). `politics/names.js`: nine styles, made with the countries, written names kept.
 - **S5: Border editing and picking the player's country.** Starts from `orogen-map-editor.html` once it is in the repo.
 - **S6: Economic and diplomatic setup.** Noted by the owner on 2026-11-10, to build later. It runs once the player's
   country is picked and every other country exists:

@@ -1,6 +1,6 @@
-// The fork's check of politics/countries.js and names.js (FORK.md S2–S4): Generate's worlds built headless, their
-// countries generated (on the guessed people: the finish's food is not run here), divided and named, and what must hold
-// checked.
+// The fork's check of politics/countries.js and names.js (FORK.md S2–S4): Generate's worlds built headless and finished
+// (the finish's rivers and food, as the page's finish worker makes them: ~15 s a world), their countries generated, divided
+// and named, and what must hold checked.
 //
 //   node politics/tools/check-countries.mjs                 the checks, PASS/FAIL, exit code
 //   node politics/tools/check-countries.mjs --png out/dir   plus each world's countries as a PNG (to look at)
@@ -16,7 +16,8 @@ import { register } from 'node:module';
 register('data:text/javascript,' + encodeURIComponent(
     `export async function resolve(s, c, n) { return n(s.startsWith('https://cdn.jsdelivr.net/npm/delaunator') ? 'delaunator' : s, c); }`), import.meta.url);
 const { findLands } = await import('../lands.js');
-const { makeCountries, divideContinent, peopleGuess, COUNTRIES } = await import('../countries.js');
+const { makeCountries, divideContinent, peoplePerCell, riverFlow, COUNTRIES } = await import('../countries.js');
+const { finishWorld } = await import('./finish-headless.mjs');
 const { CULTURES, makeNames } = await import('../names.js');
 const { meshFromArrays } = await import('../../v2/js/core/sim-mesh.js');
 
@@ -36,7 +37,7 @@ async function world(seed, N, sliders = {}) {
     while (!last) await new Promise(r => setTimeout(r, 5));
     console.log = quiet;
     if (last.type === 'error') throw new Error(last.message);
-    return { mesh: meshFromArrays(last.shared.mesh), heightKm: last.shared.heightKm };
+    return { mesh: meshFromArrays(last.shared.mesh), heightKm: last.shared.heightKm, shared: last.shared };
 }
 const CAT = [[208, 143, 52], [49, 180, 172], [139, 61, 44], [136, 150, 239], [114, 132, 49], [123, 53, 139], [5, 120, 164], [198, 97, 120]];
 async function png(file, mesh, F, P) {
@@ -59,9 +60,12 @@ const WORLDS = [{ name: 'seed 1', seed: 1 }, { name: 'seed 2', seed: 2 }, { name
     { name: 'ocean world', seed: 13, sliders: { landCoverage: 0.1 } }, { name: 'few countries', seed: 3, count: COUNTRIES.min }, { name: 'many countries', seed: 3, count: COUNTRIES.max }];
 for (const wd of WORLDS) {
     console.log(`\n── ${wd.name} ──`);
-    const { mesh, heightKm } = await world(wd.seed, 60000, wd.sliders), F = findLands(mesh, heightKm), fed = peopleGuess(mesh, heightKm);
-    const count = wd.count ?? COUNTRIES.default, t0 = performance.now(), P = makeCountries(mesh, heightKm, F, fed, { count, seed: wd.seed }), ms = performance.now() - t0;
-    const again = makeCountries(mesh, heightKm, F, fed, { count, seed: wd.seed });
+    const { mesh, heightKm, shared } = await world(wd.seed, 30000, wd.sliders), F = findLands(mesh, heightKm);
+    const { fin } = await finishWorld(shared), fed = peoplePerCell(mesh, fin), flow = riverFlow(mesh, fin.rivers);
+    check(`${wd.name}: the people the land could feed are read from the finish's food`, !!fed && fed.some(v => v > 1), fed ? `mean ${(fed.reduce((a, b) => a + b, 0) / fed.length).toFixed(1)} a km²` : 'none');
+    const count = wd.count ?? COUNTRIES.default, t0 = performance.now(), P = makeCountries(mesh, heightKm, F, fed, { count, seed: wd.seed, flow }), ms = performance.now() - t0;
+    const again = makeCountries(mesh, heightKm, F, fed, { count, seed: wd.seed, flow });
+    const plain = makeCountries(mesh, heightKm, F, fed, { count, seed: wd.seed, flow: null });
     if (PNG_DIR) await png(path.join(PNG_DIR, `${wd.name.replace(/ /g, '-')}.png`), mesh, F, P);
     const n = mesh.numCells, want = Math.max(F.continents.length, count);
     let orphan = 0, seaOwned = 0, wrong = 0;
@@ -74,7 +78,19 @@ for (const wd of WORLDS) {
     check(`${wd.name}: the same world gives the same countries`, again.countries.length === P.countries.length && again.countryOf.every((v, i) => v === P.countryOf[i]));
     const sizes = P.countries.map(k => k.km2).sort((a, b) => a - b);
     check(`${wd.name}: big and small countries (the biggest at least three times the median)`, P.countries.length < 6 || sizes[sizes.length - 1] > 3 * sizes[sizes.length >> 1], `${(sizes[sizes.length - 1] / 1e6).toFixed(1)} M and ${(sizes[sizes.length >> 1] / 1e6).toFixed(2)} M km²`);
-    check(`${wd.name}: generated in under 2 s at 60K`, ms < 2000, `${ms.toFixed(0)} ms`);
+    check(`${wd.name}: generated in under 2 s at 30K`, ms < 2000, `${ms.toFixed(0)} ms`);
+    // borders along rivers: the share of border edges with a big river (500 m³/s and more) on one side, with the rivers and without
+    const big = (c) => flow[c] >= COUNTRIES.river.minQ, share = (Q) => { let e = 0, on = 0; for (let c = 0; c < n; c++) { const o = Q.countryOf[c]; if (o < 0) continue; for (let k = mesh.adjOffset[c]; k < mesh.adjOffset[c + 1]; k++) { const b = mesh.adjList[k]; if (b < c || Q.countryOf[b] < 0 || Q.countryOf[b] === o) continue; e++; if (big(c) || big(b)) on++; } } return e ? on / e : 0; };
+    let riverCells = 0; for (let c = 0; c < n; c++) if (big(c)) riverCells++;
+    const withR = share(P), withoutR = share(plain);
+    if (riverCells >= 60 && P.countries.length >= 8) check(`${wd.name}: borders follow rivers (10 points more than without them)`, withR >= withoutR + 0.10 && withR >= 0.35, `${(100 * withR).toFixed(0)} % of borders on a big river, ${(100 * withoutR).toFixed(0)} % without`);
+    else console.log(`NOTE  ${wd.name}: ${riverCells} cells of big rivers: borders along rivers not checked`);
+    // some countries stretch along one axis, and some stay round
+    const el = P.countries.map(k => { let m = [0, 0, 0], cnt = 0; for (let c = 0; c < n; c++) if (P.countryOf[c] === k.id) { m[0] += mesh.xyz[3 * c]; m[1] += mesh.xyz[3 * c + 1]; m[2] += mesh.xyz[3 * c + 2]; cnt++; } const l = Math.hypot(...m) || 1; m = m.map(v => v / l);
+        let sxx = 0, sxy = 0, syy = 0; const u = Math.abs(m[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0], e1 = [m[1] * u[2] - m[2] * u[1], m[2] * u[0] - m[0] * u[2], m[0] * u[1] - m[1] * u[0]], e1n = Math.hypot(...e1), E1 = e1.map(v => v / e1n), E2 = [m[1] * E1[2] - m[2] * E1[1], m[2] * E1[0] - m[0] * E1[2], m[0] * E1[1] - m[1] * E1[0]];
+        for (let c = 0; c < n; c++) if (P.countryOf[c] === k.id) { const x = mesh.xyz[3 * c] * E1[0] + mesh.xyz[3 * c + 1] * E1[1] + mesh.xyz[3 * c + 2] * E1[2], y = mesh.xyz[3 * c] * E2[0] + mesh.xyz[3 * c + 1] * E2[1] + mesh.xyz[3 * c + 2] * E2[2]; sxx += x * x; sxy += x * y; syy += y * y; }
+        const tr = sxx + syy, det = sxx * syy - sxy * sxy, d = Math.sqrt(Math.max(0, tr * tr / 4 - det)); return cnt < 12 ? null : Math.sqrt(Math.max(1e-9, tr / 2 - d) / (tr / 2 + d)); }).filter(v => v !== null);
+    if (el.length >= 12) check(`${wd.name}: round and elongated countries both (width over length from ${Math.min(...el).toFixed(2)} to ${Math.max(...el).toFixed(2)})`, Math.min(...el) < 0.5 && Math.max(...el) > 0.75);
 
     // two cultures on the biggest continent: both sides taken, each side's countries touching
     const cultures = F.continents.map((k, i) => [CULTURES[i % 9].id, i === 0 ? CULTURES[(i + 4) % 9].id : null]);
@@ -84,6 +100,8 @@ for (const wd of WORLDS) {
     const names = makeNames(mesh, F, P, { seed: wd.seed, cultureOf, continentCulture: (id) => cultures[id][0] });
     const all = [...names.continents, ...names.seas, ...names.countries];
     check(`${wd.name}: every place named, no name twice`, all.every(s => s && s.length >= 4) && new Set(all.map(s => s.toLowerCase())).size === all.length, `${all.length} names`);
+    const lens = names.countries.map(s => s.length), mean = lens.reduce((a, b) => a + b, 0) / lens.length;
+    check(`${wd.name}: country names are short (the mean ${mean.toFixed(1)} letters, none over 11)`, mean <= 6.6 && Math.max(...lens) <= 11);
     const same = makeNames(mesh, F, P, { seed: wd.seed, cultureOf, continentCulture: (id) => cultures[id][0] });
     check(`${wd.name}: the same world gives the same names`, JSON.stringify(same) === JSON.stringify(names));
     const kept = makeNames(mesh, F, P, { seed: wd.seed, salt: 1, cultureOf, continentCulture: (id) => cultures[id][0], fixed: { [`country:${P.countries[0].capital}`]: 'Testland', 'continent:0': 'Testia' } });

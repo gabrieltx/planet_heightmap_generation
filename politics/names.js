@@ -14,28 +14,32 @@ export const CULTURES = [
 export const cultureName = (id) => CULTURES.find(c => c.id === id)?.name ?? '';
 
 // Each style: `on`sets, `nu`clei and `co`das for its syllables (a blank among them: often none), how many syllables a
-// stem has, the endings a country's and a continent's name take, and sometimes words set before or after.
+// stem has (mostly one or two: the names are short), and the endings a country's and a continent's name take (a repeated
+// ending is more likely). A name is thrown back if it runs past MAX letters.
 const S = (s) => s.split(' ').map(x => (x === '_' ? '' : x));
 const STYLES = {
-    weur: { on: S('b br c d f fl g gr l m n p pr r s st t tr v w h _ _'), nu: S('a e i o u ai ou ea ie au'), co: S('n r l s nd rt rn m st _ _ _'), syl: [1, 2],
-        country: S('ia land mark ony ain ance aria burg stria gau elle onne'), continent: S('ia a ica onia erra'), pre: [], post: [] },
-    eeur: { on: S('b br d dr g gr k kr l m n p pr r s sl st t tr v vl z zd ch _'), nu: S('a e i o u ia ie'), co: S('v r n k l sk m sh _ _ _'), syl: [1, 2],
-        country: S('ia ova avia stva sko ica ina grad enia uria ovia'), continent: S('ia ava ovia aria'), pre: [], post: [] },
-    easia: { on: S('h j k l m n r s sh t y z ch ts w x q _'), nu: S('a e i o u ao ai ei ou ia uo'), co: S('n ng _ _ _ _'), syl: [2, 2, 2, 3],
-        country: S('_ _ _ _ _ guo do'), continent: S('_ _ shu zhou'), pre: [], post: [], plain: true },
-    sasia: { on: S('b bh d dh g j k kh l m n p r s sh t v y ch _'), nu: S('a a i u e o aa ee'), co: S('n r l m sh t nd _ _ _'), syl: [1, 2],
-        country: S('stan desh pur abad nagar ia ara ala istan arta'), continent: S('avarta dvipa ia ara'), pre: [], post: [] },
-    africa: { on: S('b d g k l m mb n nd ng nk s t w z zw ch sh y _'), nu: S('a a e i o u'), co: S('_ _ _ _ n m'), syl: [2, 3],
-        country: S('_ _ a i ongo wana ali anda ia ambe'), continent: S('a ia ika anda'), pre: [], post: [], plain: true },
-    namer: { on: S('b br c ch d f g h k l m n p r s sh st t w wh'), nu: S('a e i o u ee oo ay'), co: S('n r l s k nd rd _ _ _'), syl: [1, 2],
-        country: S('ia land ota ana awa ton field ington ada ico'), continent: S('ia a ica ana'), pre: ['New '], post: [' Union', ' Federation', ' Commonwealth'] },
-    latam: { on: S('b c d f g l m n p r s t v ch qu z gu tr br _'), nu: S('a e i o u ia io ue'), co: S('n r l s z _ _ _ _'), syl: [1, 2],
-        country: S('ador uela ina ivia aguay embia ara illo anca ico aria'), continent: S('ia a ica ora'), pre: ['San ', 'Costa ', 'Nueva '], post: [] },
-    oceania: { on: S('h k l m n p r t w ng wh v f _ _'), nu: S('a e i o u a a ai au oa ua'), co: S('_'), syl: [2, 3],
-        country: S('_ _ nui loa tea roa iti ana'), continent: S('_ nui roa ana'), pre: [], post: [], plain: true },
-    meast: { on: S('b d f h j k kh l m n q r s sh t z gh y _'), nu: S('a a i u e aa ee ou'), co: S('r n m l d sh b f _ _ _'), syl: [1, 2],
-        country: S('stan iyah an ar abad istan ia ain ait oun'), continent: S('ia iyah an ara'), pre: ['Al-'], post: [] },
+    weur: { on: S('b br c d f fl g gr l m n p pr r s st t tr v w h _'), nu: S('a e i o u ai ou ea ie au'), co: S('n r l s nd rt rn m st _ _ _'), syl: [1, 1, 2],
+        country: S('ia ia ia land mark ain gau elle ony burg'), continent: S('ia ia a ica onia') },
+    eeur: { on: S('b br d dr g gr k kr l m n p pr r s sl st t tr v vl z zd ch _'), nu: S('a e i o u ia ie'), co: S('v r n k l sk m sh _ _ _'), syl: [1, 1, 2],
+        country: S('ia ia ova sko ica ina grad'), continent: S('ia ia ava ovia') },
+    easia: { on: S('h j k l m n r s sh t y z ch ts w x q _'), nu: S('a e i o u ao ai ei ou ia uo'), co: S('n ng _ _ _ _'), syl: [1, 2, 2],
+        country: S('_ _ _ _ _ _ guo do'), continent: S('_ _ shu zhou'), plain: true },
+    sasia: { on: S('b bh d dh g j k kh l m n p r s sh t v y ch _'), nu: S('a a i u e o aa ee'), co: S('n r l m sh t nd _ _ _'), syl: [1, 1, 2],
+        country: S('stan desh pur abad ia ia ara ala'), continent: S('ia ia ara dvipa') },
+    africa: { on: S('b d g k l m mb n nd ng nk s t w z zw ch sh y _'), nu: S('a a e i o u'), co: S('_ _ _ _ n m'), syl: [2, 2],
+        country: S('_ _ _ a i ia ali ambe'), continent: S('a ia ika'), plain: true },
+    namer: { on: S('b br c ch d f g h k l m n p r s sh st t w wh'), nu: S('a e i o u ee oo ay'), co: S('n r l s k nd rd _ _ _'), syl: [1, 1, 2],
+        country: S('ia ia ota ana awa ton ada'), continent: S('ia a ica ana'), pre: ['New '] },
+    latam: { on: S('b c d f g l m n p r s t v ch qu z gu tr br _'), nu: S('a e i o u ia io ue'), co: S('n r l s z _ _ _ _'), syl: [1, 1, 2],
+        country: S('ia ia ador uela ina ivia ara illo'), continent: S('ia a ica ora'), pre: ['San '] },
+    oceania: { on: S('h k l m n p r t w ng wh v f _ _'), nu: S('a e i o u a a ai au oa ua'), co: S('_'), syl: [2, 2, 3],
+        country: S('_ _ _ nui loa tea roa'), continent: S('_ nui roa ana'), plain: true },
+    meast: { on: S('b d f h j k kh l m n q r s sh t z gh y _'), nu: S('a a i u e aa ee ou'), co: S('r n m l d sh b f _ _ _'), syl: [1, 1, 2],
+        country: S('stan iyah an ar ia ia istan ain'), continent: S('ia iyah an ara'), pre: ['Al-'] },
 };
+/** The longest a name's own word may be (letters, before a prefix or "Ocean"), by kind; a name that cannot be found within it
+ *  is let run a little longer. */
+const MAX = { country: 7, continent: 8, ocean: 6, sea: 6 };
 
 // Real countries (and a few that were): a made name that matches one is made again.
 const REAL = new Set(('afghanistan albania algeria andorra angola argentina armenia australia austria azerbaijan bahamas bahrain bangladesh barbados belarus belgium belize ' +
@@ -74,25 +78,25 @@ function join(s, end) {
 
 /**
  * A name in a culture's style. `kind`: 'country', 'continent', 'ocean' or 'sea'; `taken`: the names already used in this
- * world (lower case), added to.
+ * world (lower case), added to. Short: a name's own word is at most MAX[kind] letters (a few more only when none else is
+ * left to find).
  */
 export function makeName(rng, culture, kind, taken) {
     const st = STYLES[culture] ?? STYLES.weur;
-    for (let tries = 0; tries < 60; tries++) {
-        let name;
+    for (let tries = 0; tries < 240; tries++) {
+        const room = MAX[kind] + (tries > 120 ? 2 : 0) + (tries > 200 ? 2 : 0);
+        let word, name;
         if (kind === 'country') {
-            name = cap(join(stem(rng, st), pick(rng, st.country)));
-            const r = rng();
-            if (st.pre.length && r < 0.07) name = pick(rng, st.pre) + name;
-            else if (st.post.length && r > 0.94) name += pick(rng, st.post);
-        } else if (kind === 'continent') name = cap(join(stem(rng, st), pick(rng, st.continent)));
+            word = cap(join(stem(rng, st), pick(rng, st.country)));
+            name = st.pre && rng() < 0.06 ? pick(rng, st.pre) + word : word;
+        } else if (kind === 'continent') name = word = cap(join(stem(rng, st), pick(rng, st.continent)));
         else {
             // (the waters: named in English, after a word in the style of the nearest land)
-            const word = cap(join(stem(rng, st), st.plain ? '' : pick(rng, ['', '', 'ian', 'ic', 'an'])));
+            word = cap(join(stem(rng, st), st.plain ? '' : pick(rng, ['', '', '', 'ian', 'ic'])));
             name = kind === 'ocean' ? `${word} Ocean` : rng() < 0.5 ? `${word} Sea` : `Sea of ${word}`;
         }
-        const key = name.toLowerCase(), bare = key.replace(/^(new |san |costa |nueva |al-|sea of )/, '').replace(/ (ocean|sea|union|federation|commonwealth)$/, '');
-        if (name.length < 4 || bare.length > 11 || /[^aeiou\s-]{4}/.test(bare) || REAL.has(bare) || REAL.has(key) || taken.has(key) || taken.has(bare)) continue;
+        const key = name.toLowerCase(), bare = word.toLowerCase();
+        if (word.length < (kind === 'ocean' || kind === 'sea' ? 3 : 4) || word.length > room || /[^aeiou\s-]{4}/.test(bare) || REAL.has(bare) || REAL.has(key) || taken.has(key) || taken.has(bare)) continue;
         taken.add(key); taken.add(bare);
         return name;
     }

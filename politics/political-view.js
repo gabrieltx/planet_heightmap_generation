@@ -10,6 +10,7 @@
 // picture's equirectangular canvas. `pol`: the world's political state (politics.js politicsOf).
 
 import { latLonOf } from './lands.js';
+import { riverPaths, drawRivers } from '../v2/js/evolution/finish-view.js';
 import { cultureName } from './names.js';
 
 // ── the look's values, from tokens.css ──
@@ -62,6 +63,14 @@ export function politicalColors(mesh, pol, out, shade) {
     return true;
 }
 
+/** The finished world's rivers over the picture (W px wide), as the Terrain view draws them: the borders often follow them. */
+export function drawPoliticalRivers(ctx, W, fin, view) {
+    if (!view.water || !fin?.rivers) return;
+    ctx.save(); ctx.scale(W / 2048, W / 2048);          // (the rivers are drawn for a texture 2048 px wide)
+    drawRivers(ctx, riverPaths(fin, view.riverQ), false);
+    ctx.restore();
+}
+
 /** The names over the picture (W px wide, equirectangular): the waters', and the continents' or the countries'. */
 export function drawPoliticalNames(ctx, W, mesh, pol, onGlobe = true) {
     const { F, P } = pol, T = tokens(), H = W >> 1, unit = W / 2048, kmPerPx = 40075 / W;
@@ -99,7 +108,7 @@ export function politicalLegendHTML(pol) {
     const count = (n, one, many) => `${n} ${n === 1 ? one : many}`, waters = `${count(oceans, 'ocean', 'oceans')}${seas ? ` and ${count(seas, 'sea', 'seas')}` : ''}`;
     const cultures = (k) => (pol.cultures[k.id] ?? []).filter(Boolean).map(cultureName).join(' and ');
     if (pol.show === 'countries' && P)
-        return `<div class="evo-legend-head">Political: ${count(P.countries.length, 'country', 'countries')} on ${count(F.continents.length, 'continent', 'continents')}; neighbours in different colours, a dark line along each border</div><div class="evo-koppen">` +
+        return `<div class="evo-legend-head">Political: ${count(P.countries.length, 'country', 'countries')} on ${count(F.continents.length, 'continent', 'continents')}; neighbours in different colours, a dark line along each border; borders often follow rivers and ranges</div><div class="evo-koppen">` +
             F.continents.map(k => `<span>${continentName(pol, k)}: ${P.countries.filter(c => c.continent === k.id).length}, ${cultures(k)}</span>`).join('') + '</div>';
     return `<div class="evo-legend-head">Political: ${count(F.continents.length, 'continent', 'continents')}, each with its islands; ${waters}, a pale line between them</div><div class="evo-koppen">` +
         F.continents.map(k => `<span><i style="background:rgb(${T.cat[k.id].join(',')})"></i>${continentName(pol, k)}${pol.names ? `: ${cultures(k)}` : ''}</span>`).join('') + '</div>';

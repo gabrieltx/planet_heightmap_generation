@@ -44,7 +44,7 @@ Every map mode answers one question. The question picks the colours.
 **Countries (this fork's Political view):** a political map's colouring. Each country takes one of the categorical eight
 so that no two neighbours share a hue, with a dark line along every border. Here a hue does not mean a kind: it only
 tells neighbours apart, and the name on the map, the readout and the legend say who. This is the one place a palette is
-used this way; continents, by contrast, are kinds and take `cat-1` … `cat-8` in order.
+used this way; continents, by contrast, are kinds and take `cat-1` … `cat-8` in order. The finish's rivers are drawn over a countries map in their usual style, since the borders follow them.
 
 ## Legends, readouts and finders
 
