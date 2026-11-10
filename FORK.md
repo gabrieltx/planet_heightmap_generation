@@ -85,7 +85,7 @@ has never been in git. Once it's added to the repo, P0–P3 below should start f
 
 Scoped with the owner on 2026-11-10. The political layer starts as the game's **setup phase**: the "new game" flow
 that turns a generated planet into a named, bordered world with the player's country chosen. What the game is after
-setup (turns with economy and expansion, or a sandbox) is still open and is decided before S6.
+setup (turns with economy and expansion, or a sandbox) is still open and is decided before S7.
 
 Each step must stand on its own and follow upstream's pillars and rules: looks first, mobile-friendly, and scale
 invariance (physical units such as km and km², never cell hops).
@@ -134,4 +134,16 @@ Names come after cultures on purpose, so nothing is named twice.
 - **S3: Borders.** Seeds from the food layer, growth by travel cost, the country-count slider, the political map view.
 - **S4: Names.** Nine name generators, generate-all, edit and lock.
 - **S5: Border editing and picking the player's country.** Starts from `orogen-map-editor.html` once it is in the repo.
-- **S6: The game after setup.** Not scoped yet.
+- **S6: Economic and diplomatic setup.** Noted by the owner on 2026-11-10, to build later. It runs once the player's
+  country is picked and every other country exists:
+  1. **Global powers.** The player picks up to five countries as the world's great powers, in no order, never their
+     own. How many they may pick depends on the size of the map and the number of countries.
+  2. **GDP ranking.** The game then places every country on a top-X GDP list. The player's country is always within
+     the top 20.
+  3. **Allies and enemies.** The player picks three starting allies and three starting enemies. These feed a diplomatic
+     system.
+
+  Still to decide when this is built: how the number of powers scales with the map; how long the GDP list is; what
+  the ranking draws on besides the chosen powers (the land's food, people and ores are there to use); whether a power
+  can also be an ally or an enemy; what happens on a world with fewer than seven countries.
+- **S7: The game after setup.** Not scoped yet. S6's diplomacy and GDP are its first inputs.
