@@ -99,6 +99,27 @@ lightens while Ctrl (⌘) is held, and each pending piece is tinted by what it w
 sink — with the ground showing through, to its own outline (`js/generate-plates.js`). The hover card steps up over the
 Rebuild button while edits wait.
 
+## The Political view (this fork)
+
+The **Political** tab, last on the layer bar (and in the phone's layer list), is the fork's political layer
+(`FORK.md`). Today it shows the world's **continents** and its **oceans and seas**, found from the ground as soon as
+the planet appears (`politics/lands.js`):
+
+- **Continents**: the land is divided at its necks. A cell's depth is its distance to the sea; two lands joined only by
+  an isthmus much narrower than either (under 30 % of the smaller one's depth) are two. Bodies of 3 million km² and more
+  are continents, at most eight, each in its own colour. Smaller land, islands included, goes with the continent nearest
+  to it.
+- **Oceans and seas**: a sea behind a strait is its own, by the same rule. The open ocean is shared out among its
+  deepest basins, one for about every 90 million km² (at most six), divided at the passages between them. A body of
+  12 million km² or more is an ocean; from 1.5 million, a sea. A pale line marks where one meets the next.
+- **Names**: each continent, ocean and sea is named at its middle (the place farthest from its coasts). Until the
+  names are generated they are numbered, biggest first.
+- The hover card's first line names the continent (and whether the place is one of its islands) or the ocean or sea,
+  with its size. The legend lists the continents.
+
+Everything is measured in km and km², so a world is divided the same way at every Detail. `node
+politics/tools/check-lands.mjs` checks this on eight worlds (`--png <folder>` also saves each one's map).
+
 ## Mobile Support
 
 Generate is fully usable on phones and tablets:
@@ -219,4 +240,14 @@ js/
   elevation.js, super-plates.js, koppen.js, climate-config.js, climate-util.js, wind.js … temperature.js
                         The old pipeline (terrain and climate) — no longer run by the pages; kept as the climate's tuning
                         tools' synthetic planets (tuning/climate/lib/gen-planets.mjs) and the climate lab
+```
+
+The fork's political layer is in `politics/`, hooked into `js/main.js` at lines marked `// fork:`:
+
+```
+politics/
+  politics.js           The layer on the page: the Political tab added to the layer bar, and what the page's hooks call
+  lands.js              A world's continents, oceans and seas from its ground (pure functions)
+  political-view.js     The Political view: each cell's colour, the names over the picture, the legend, the hover's line
+  tools/check-lands.mjs The headless check of lands.js on Generate's worlds
 ```

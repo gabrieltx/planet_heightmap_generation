@@ -113,6 +113,8 @@ docs/                   Each tool's guide (generate.md, import.md, evolution.md)
 docs/style-guide/       The look: the brand book, maps and the globe, page patterns, and the components (reference CSS and
                         JS); plans/REDESIGN_PLAN.md moves the app onto it
 js/                     Generate and Import (file by file: docs/generate.md, "Code")
+politics/               This fork's political layer: the Political view on Generate (docs/generate.md, "The Political view";
+                        FORK.md has the plan)
 v2/                     World Orogen V2 — the Evolution page (/evolution) and the climate every page runs;
                         tectonic *history* engine built in confirmed phases; see v2/README.md and
                         plans/V2_TECTONIC_HISTORY_DESIGN.md. Open /v2/ for the Tectonics Lab (locally: the deploy leaves

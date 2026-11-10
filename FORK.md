@@ -123,9 +123,13 @@ Names come after cultures on purpose, so nothing is named twice.
 
 ### Build order
 
-- **S0: Plumbing.** A `politics/` module that receives a finished world (the contract above) in Generate, with one
-  `// fork:` hook. A "Political" tab that walks the setup flow. Political state saved with the planet.
-- **S1: Continents and oceans.** Detection, outlines, island attachment, ocean basins.
+- **S0: Plumbing.** Done (2026-11-10). `politics/` receives Generate's world through hooks in `js/main.js` marked
+  `// fork:`, and adds a Political tab to the layer bar. Nothing is saved yet, because nothing is chosen yet: what S1
+  shows is found again from the ground each time. Saving starts with S2, the first step with choices to keep.
+- **S1: Continents and oceans.** Done (2026-11-10). `politics/lands.js` (how it divides them: `docs/generate.md`, "The
+  Political view"), checked by `node politics/tools/check-lands.mjs`. Known limits: the Political view is on Generate
+  only (not Import or Evolution); it reads the first picture's ground, not the finished world's lakes; on a world that
+  is mostly land, the number of shut-in seas can differ between Details.
 - **S2: Cultures.** The per-continent picker (one or two of nine) and the two-culture geographic split.
 - **S3: Borders.** Seeds from the food layer, growth by travel cost, the country-count slider, the political map view.
 - **S4: Names.** Nine name generators, generate-all, edit and lock.

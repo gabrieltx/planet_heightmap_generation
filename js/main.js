@@ -25,6 +25,7 @@ import { showBuildError, describeFailure, holdControls } from './build-error.js'
 import { presentCrustLine } from './present-crust.js';
 import { plateColors, platesLegendHTML, INSPECT, inspectColors, drawPlateLines, platesMap } from './generate-plates.js';
 import { state } from './state.js';
+import { mountPolitics } from '../politics/politics.js';   // fork: the political layer (FORK.md)
 import { store, sliderTooltip, detailWarning, redrawFoldedSliders, sidePanel, buildOverlay, tutorial } from './page-chrome.js';
 
 setDelaunator(Delaunator);
@@ -43,10 +44,11 @@ const inspectEl = $('debugLayer');
 const pv = new PlanetView({ isTouch: IS_TOUCH, gpu: new URLSearchParams(location.search).get('gpu') !== '0', paletteKey: 'orogen.generate.palette',
     band: { below: document.getElementById('info'), gap: 24 },
     onChange: viewChanged, alive: (fin) => fin === world?.fin,
-    extraLines: (ctx, W, view) => drawPlateLines(ctx, W, view, world, { pending, hovered: hoveredPiece }),
-    extraLinesKey: (view) => `${world?.version ?? 0}|${view.layer === 'plates'}|${[...pending].join(',')}|${hoveredPiece}`,
+    extraLines: (ctx, W, view) => { drawPlateLines(ctx, W, view, world, { pending, hovered: hoveredPiece }); politics.lines(ctx, W, view, world); },   // fork: the Political view's names
+    extraLinesKey: (view) => `${world?.version ?? 0}|${view.layer === 'plates'}|${[...pending].join(',')}|${hoveredPiece}|${politics.linesKey(view)}`,   // fork
     infoText: (mode) => (IS_TOUCH ? 'Drag to rotate · Pinch to zoom · Use edit button to reshape' : `Drag to ${mode === 'map' ? 'move the map' : 'rotate'} · Scroll to zoom · Ctrl-click (⌘-click on a Mac) to reshape continents`) });
 const view = pv.view;
+const politics = mountPolitics({ pv, repaint: () => { dirty = true; } });   // fork: the Political tab
 if (IS_TOUCH) $('info').textContent = 'Drag to rotate · Pinch to zoom · Use edit button to reshape';
 // (a touch screen wider than a phone — a tablet — keeps the edit button too: styles.css body.touch)
 if (IS_TOUCH) document.body.classList.add('touch');
@@ -180,6 +182,7 @@ function pageCells(layer, out, shade) {
         return true;
     }
     if (layer.startsWith('inspect:')) return inspectColors(layer.slice(8), w, out, shade);
+    if (politics.cells(layer, w, out, shade)) return true;   // fork
     return false;
 }
 function paint() {
@@ -191,6 +194,7 @@ function paint() {
     const legend = $('climateLegend');
     if (view.layer === 'plates') { legend.innerHTML = platesLegendHTML(); legend.dataset.key = 'plates'; }
     else if (view.layer.startsWith('inspect:')) { const L = INSPECT[view.layer.slice(8)]; legend.innerHTML = L ? `<div class="evo-legend-head">${L.name}</div><div class="evo-koppen">${L.legend}</div>` : ''; legend.dataset.key = view.layer; }
+    politics.legend(view.layer, w, legend);   // fork
     pv.syncLegendCard(!!fin);
 }
 function tick(now) {
@@ -224,6 +228,8 @@ function readout(e) {
         const crust = presentCrustLine(pr, r);
         if (crust) head.push(`<span class="hi-label">Crust</span> ${crust}`);
     }
+    const political = politics.readout(view.layer, w, r);   // fork
+    if (political) head.unshift(political);
     pv.hover(pv.readoutLines({ p, fin: pv.shows(w.fin), heightKm: w.heightKm[r], head, story: w.story, rec: w.regionCell[r] }));
 }
 function setHovered(piece) { if (piece !== hoveredPiece) { hoveredPiece = piece; dirty = true; } }
