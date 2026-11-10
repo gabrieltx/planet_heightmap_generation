@@ -15,6 +15,9 @@ of the dice, and what its people make of it is up to you.
 
 The project's full vision is in [VISION.md](VISION.md).
 
+> **This is a fork.** It follows [upstream World Orogen](https://github.com/raguilar011095/planet_heightmap_generation)
+> for the ground and adds a political and game layer on top. See [FORK.md](FORK.md).
+
 ## The tools
 
 ### Generate: a planet in seconds, shaped by hand
@@ -102,7 +105,8 @@ CNAME                   Custom domain config (orogen.studio)
 404.html                Custom 404 page
 preview.png             Social preview image (og:image / Twitter card)
 VISION.md               The project's vision: what Orogen is, its pillars, each tool's profile, its scope
-CLAUDE.md               Rules for Claude Code sessions (imports VISION.md)
+CLAUDE.md               Rules for Claude Code sessions (imports VISION.md and FORK.md)
+FORK.md                 This fork: following upstream for the ground, a political and game layer on top, syncing, roadmap
 .claude/               Claude Code setup: the look's checklist (skills/orogen-look/) and a hook that runs the style
                         check after edits to stylesheets, pages and interface JS (settings.json)
 docs/                   Each tool's guide (generate.md, import.md, evolution.md) and what they share (shared.md)

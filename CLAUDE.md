@@ -10,6 +10,17 @@ World Orogen is a studio of free planet tools that run in the browser (Generate,
 
 @VISION.md
 
+## This fork
+
+This repository is a fork of upstream World Orogen. It follows upstream `main` for everything geological and owns a political and game layer on top. `FORK.md` holds its strategy, how to sync with upstream, the data the political layer reads, and its roadmap. It is imported below. Fork rules:
+
+- Political and game code lives in `politics/`. Edit upstream's files (`js/`, `v2/`, the pages) only at hook points, each marked with a `// fork:` comment, so that merging upstream stays easy.
+- Sync with `git fetch upstream main && git merge upstream/main`, never by rebasing published history. After a merge, run the checks in `v2/README.md` (they need `npm install delaunator pngjs`). The checks' time budgets (`ms <`) are tuned for upstream's desktop and can fail on a slower machine: treat those as timing notes, not regressions.
+- Don't change `CNAME` or publish GitHub releases from this fork (a release triggers the Pages deploy) unless the fork gets its own domain.
+- `VISION.md` stays upstream's. The fork's goals go in `FORK.md`.
+
+@FORK.md
+
 ## Where things live
 
 - `index.html`: the Studio home page
