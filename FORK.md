@@ -83,20 +83,51 @@ editor that works on World Orogen PNG exports (heightmap, land mask, satellite, 
 `0budfia1fa0sgsdyq7`, and sits in the owner's claude.ai "World Building" project with a locations reference PDF. It
 has never been in git. Once it's added to the repo, P0–P3 below should start from it instead of from scratch.
 
-Each phase must stand on its own and follow upstream's pillars and rules: looks first, mobile-friendly, and scale
-invariance (physical units, never cell hops).
+Scoped with the owner on 2026-11-10. The political layer starts as the game's **setup phase**: the "new game" flow
+that turns a generated planet into a named, bordered world with the player's country chosen. What the game is after
+setup (turns with economy and expansion, or a sandbox) is still open and is decided before S6.
 
-- **P0: Plumbing.** A `politics/` module that receives a finished world (the contract above) in Generate, with one
-  `// fork:` hook. A "Political" tab in the layer bar that draws nothing yet. Political state saved in the planet
-  code or link, and in planet files.
-- **P1: Settlements.** Cities placed where the land could feed people, weighted toward river mouths, confluences,
-  sheltered coasts and fords. They are sized by the people their surroundings could support. The cradles of states
-  are the densest well-watered cores, after Madeline James Part 4 and Carneiro's circumscription. Upstream once
-  built "Cradles" in its food layer and removed it to redo later. Ours is fork-owned, so there's no clash.
-- **P2: States and borders.** Polities grow from the cradles by travel cost: mountains, deserts and open sea are
-  expensive, while rivers and coasts are cheap. That makes borders follow natural barriers and rivers, not
-  Voronoi lines. A political map view, with names and colours.
-- **P3: Editing.** The player shapes the map: claim or cede a region, merge or split states, rename and recolour. This
-  mirrors Generate's plate editing: Ctrl-click on desktop, edit mode on a phone.
-- **P4: The game.** Turns, and a nation to play. Economy from food and ores, expansion and diplomacy, events,
-  scenario goals. Scoped in detail once P1–P3 exist.
+Each step must stand on its own and follow upstream's pillars and rules: looks first, mobile-friendly, and scale
+invariance (physical units such as km and km², never cell hops).
+
+### The setup flow
+
+1. **Generate the world.** Upstream's Generate, unchanged.
+2. **Detect continents and oceans.** Outlines only, no names yet.
+3. **Assign cultures.** Each continent gets one or two cultures from the list below. Not every culture has to be used.
+4. **Generate borders** across all land, automatically.
+5. **Generate all names at once**: continents, oceans and countries, each in the style of its culture.
+6. **Adjust borders** by hand.
+7. **Pick one country** as the player's.
+
+Names come after cultures on purpose, so nothing is named twice.
+
+### Rules
+
+- **Continents**: connected land above a size threshold in km². Smaller islands attach to the nearest continent and
+  inherit its culture.
+- **Oceans**: the sea is one connected body, so it is split into basins at its narrowest points between continents.
+- **Cultures** (nine): West European, East European, East Asian, South Asian, African, North American, Latin American,
+  Oceania, Middle Eastern. Minimum one and maximum two per continent.
+- **Culture drives names only, for now.** Keep each country's culture stored on the country, so later features
+  (government, economy) can read it.
+- **Two cultures on one continent**: the continent is split geographically along its strongest natural barrier, and each
+  country takes the culture of its side.
+- **Borders**: countries grow outward from seed points placed where the land feeds the most people (upstream's food
+  layer). Mountains, deserts and sea are expensive to cross, so borders follow ranges and rivers. One slider sets
+  roughly how many countries. Uninhabitable land (ice caps, deep desert) is absorbed into the nearest country.
+- **Border editing**: a country is a set of map cells. Editing brushes cells from one country to a neighbour, plus merge
+  and split. Ctrl-click on desktop, edit mode on a phone, like Generate's plate editing.
+- **Names**: invented from each culture's sound patterns, never copied from real places. Every name is editable, and an
+  edited name is locked so it survives a regenerate.
+
+### Build order
+
+- **S0: Plumbing.** A `politics/` module that receives a finished world (the contract above) in Generate, with one
+  `// fork:` hook. A "Political" tab that walks the setup flow. Political state saved with the planet.
+- **S1: Continents and oceans.** Detection, outlines, island attachment, ocean basins.
+- **S2: Cultures.** The per-continent picker (one or two of nine) and the two-culture geographic split.
+- **S3: Borders.** Seeds from the food layer, growth by travel cost, the country-count slider, the political map view.
+- **S4: Names.** Nine name generators, generate-all, edit and lock.
+- **S5: Border editing and picking the player's country.** Starts from `orogen-map-editor.html` once it is in the repo.
+- **S6: The game after setup.** Not scoped yet.
