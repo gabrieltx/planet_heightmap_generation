@@ -41,6 +41,11 @@ Every map mode answers one question. The question picks the colours.
 
 **Staple food:** `staple-paddy`, `staple-cool`, `staple-warm`, `staple-roots`, `staple-livestock`, `staple-fish`, `staple-tree`, and wild foods as stipple. Paler where it feeds less well; striped where a second does nearly as well. These keep the Food view’s own hue choices, tuned to pass (16.7 / 7.5, with labels).
 
+**Countries (this fork's Political view):** a political map's colouring. Each country takes one of the categorical eight
+so that no two neighbours share a hue, with a dark line along every border. Here a hue does not mean a kind: it only
+tells neighbours apart, and the name on the map, the readout and the legend say who. This is the one place a palette is
+used this way; continents, by contrast, are kinds and take `cat-1` … `cat-8` in order.
+
 ## Legends, readouts and finders
 
 - **The legend card** holds at most eight rows: swatch, name, share. Members fold inside their row as words; a finder lists every item; settings sit in one folded line at the foot. Never a chip per item.

@@ -101,9 +101,11 @@ Rebuild button while edits wait.
 
 ## The Political view (this fork)
 
-The **Political** tab, last on the layer bar (and in the phone's layer list), is the fork's political layer
-(`FORK.md`). Today it shows the world's **continents** and its **oceans and seas**, found from the ground as soon as
-the planet appears (`politics/lands.js`):
+The **Political** tab, last on the layer bar (and in the phone's layer list), and the **Political** section of the side
+panel are the fork's political layer (`FORK.md`): the planet made into a world of countries. Opening the section shows
+the tab.
+
+**Continents, oceans and seas** are found from the ground as soon as the planet appears (`politics/lands.js`):
 
 - **Continents**: the land is divided at its necks. A cell's depth is its distance to the sea; two lands joined only by
   an isthmus much narrower than either (under 30 % of the smaller one's depth) are two. Bodies of 3 million km² and more
@@ -112,13 +114,38 @@ the planet appears (`politics/lands.js`):
 - **Oceans and seas**: a sea behind a strait is its own, by the same rule. The open ocean is shared out among its
   deepest basins, one for about every 90 million km² (at most six), divided at the passages between them. A body of
   12 million km² or more is an ocean; from 1.5 million, a sea. A pale line marks where one meets the next.
-- **Names**: each continent, ocean and sea is named at its middle (the place farthest from its coasts). Until the
-  names are generated they are numbered, biggest first.
-- The hover card's first line names the continent (and whether the place is one of its islands) or the ocean or sea,
-  with its size. The legend lists the continents.
+
+**The Political section** (`politics/politics.js`):
+
+| Control | What it does |
+|---|---|
+| Continents / Countries | Which picture the view shows. Countries is there once they are generated |
+| Each continent's two menus | Its cultures: one, or two, of West European, East European, East Asian, South Asian, African, North American, Latin American, Oceania and Middle Eastern. At first each continent has one, drawn by the seed. Culture sets the style of names only |
+| Countries (4 – 160, default 48) | How many countries to generate; every continent gets at least one |
+| Generate countries | Generates them, and every name. Ready once the planet is finished (a few seconds after it appears) |
+| Make new names | Every name made again, except the ones you wrote |
+| Name | The place last clicked on the map (a country, a continent, an ocean or a sea): write its name. Emptied, it gets a made name again |
+
+- **Countries** (`politics/countries.js`): each continent gets its share of the countries, half by its land and half by
+  the people its land could feed (the finish's Food layer). Their first places are set where the land feeds the most
+  people, kept apart from each other. Each country then grows outward over its continent; the going costs more over
+  ground above 800 m and over land that feeds almost no one, so borders settle on mountain ranges and in deserts. Each
+  country grows with its own strength, so some are large and some small. Islands go to the nearest country of their
+  continent over the sea. Countries are coloured so that no two neighbours match, with a dark line along each border.
+- **Two cultures on one continent**: the continent is divided between two places as far apart as its ground allows;
+  each country goes with the one it reaches more easily, so the divide falls on the hardest ground to cross. The first
+  culture takes the west, the second the east. On the Continents picture the eastern side is paler.
+- **Names** (`politics/names.js`): every name is invented from sounds and endings typical of its culture, never taken
+  from a list of real places; one that matches a real country is made again. A country is named in its own culture; a
+  continent in its first culture; an ocean or sea after the nearest continent's. No name is used twice on a world.
+- **Kept**: the cultures, the number of countries, the names you wrote and the names' draw are kept in this browser, by
+  planet code. Reopening the planet brings its countries back. They are not in the planet code or link yet.
+- The hover card names the country (its culture, its size and the people its land could feed), the continent, or the
+  ocean or sea. Click (tap) a place to pick it for renaming.
 
 Everything is measured in km and km², so a world is divided the same way at every Detail. `node
-politics/tools/check-lands.mjs` checks this on eight worlds (`--png <folder>` also saves each one's map).
+politics/tools/check-lands.mjs` and `node politics/tools/check-countries.mjs` check it headless (`--png <folder>` also
+saves each world's map).
 
 ## Mobile Support
 
@@ -246,8 +273,13 @@ The fork's political layer is in `politics/`, hooked into `js/main.js` at lines 
 
 ```
 politics/
-  politics.js           The layer on the page: the Political tab added to the layer bar, and what the page's hooks call
+  politics.js           The layer on the page: the Political tab and the side panel's Political section, the world's
+                        political state (found, chosen, kept by planet code), and what the page's hooks call
   lands.js              A world's continents, oceans and seas from its ground (pure functions)
-  political-view.js     The Political view: each cell's colour, the names over the picture, the legend, the hover's line
-  tools/check-lands.mjs The headless check of lands.js on Generate's worlds
+  countries.js          Its countries: their share per continent, first places, growth by the cost of the going, islands,
+                        colours; the people a cell could feed (from the finish's food); a continent divided for two cultures
+  names.js              The nine cultures, and the names made in each one's style
+  political-view.js     The Political view: each cell's colour, the names over the picture, the legend, the hover's lines
+  politics.css          The Political section's styles (tokens only)
+  tools/check-lands.mjs, check-countries.mjs   The headless checks, on Generate's worlds
 ```

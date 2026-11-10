@@ -45,10 +45,10 @@ const pv = new PlanetView({ isTouch: IS_TOUCH, gpu: new URLSearchParams(location
     band: { below: document.getElementById('info'), gap: 24 },
     onChange: viewChanged, alive: (fin) => fin === world?.fin,
     extraLines: (ctx, W, view) => { drawPlateLines(ctx, W, view, world, { pending, hovered: hoveredPiece }); politics.lines(ctx, W, view, world); },   // fork: the Political view's names
-    extraLinesKey: (view) => `${world?.version ?? 0}|${view.layer === 'plates'}|${[...pending].join(',')}|${hoveredPiece}|${politics.linesKey(view)}`,   // fork
+    extraLinesKey: (view) => `${world?.version ?? 0}|${view.layer === 'plates'}|${[...pending].join(',')}|${hoveredPiece}|${politics.linesKey(view, world)}`,   // fork
     infoText: (mode) => (IS_TOUCH ? 'Drag to rotate · Pinch to zoom · Use edit button to reshape' : `Drag to ${mode === 'map' ? 'move the map' : 'rotate'} · Scroll to zoom · Ctrl-click (⌘-click on a Mac) to reshape continents`) });
 const view = pv.view;
-const politics = mountPolitics({ pv, repaint: () => { dirty = true; } });   // fork: the Political tab
+const politics = mountPolitics({ pv, world: () => world, code: () => currentCode, repaint: () => { dirty = true; } });   // fork: the Political tab and section
 if (IS_TOUCH) $('info').textContent = 'Drag to rotate · Pinch to zoom · Use edit button to reshape';
 // (a touch screen wider than a phone — a tablet — keeps the edit button too: styles.css body.touch)
 if (IS_TOUCH) document.body.classList.add('touch');
@@ -129,6 +129,7 @@ function received(msg) {
     reapplyBtn.classList.remove('spinning');
     stats(msg);
     $('generate').dispatchEvent(new CustomEvent('generate-done'));
+    politics.worldChanged();   // fork
     finish(w);
 }
 
@@ -154,7 +155,7 @@ async function finish(w) {
         w.problem = /allocation failed|out of memory/i.test(String(err.message)) ? 'Not enough memory to finish this planet — try a lower Detail' : `Could not finish this planet: ${String(err.message).split('\n')[0]}`;
         console.error(err);
     } finally {
-        if (world === w) { w.finishing = null; dirty = true; updateChip(); }
+        if (world === w) { w.finishing = null; dirty = true; updateChip(); politics.worldChanged(); }   // fork: the countries wait for the finish
     }
 }
 
@@ -228,8 +229,7 @@ function readout(e) {
         const crust = presentCrustLine(pr, r);
         if (crust) head.push(`<span class="hi-label">Crust</span> ${crust}`);
     }
-    const political = politics.readout(view.layer, w, r);   // fork
-    if (political) head.unshift(political);
+    head.unshift(...politics.readout(view.layer, w, r));   // fork
     pv.hover(pv.readoutLines({ p, fin: pv.shows(w.fin), heightKm: w.heightKm[r], head, story: w.story, rec: w.regionCell[r] }));
 }
 function setHovered(piece) { if (piece !== hoveredPiece) { hoveredPiece = piece; dirty = true; } }

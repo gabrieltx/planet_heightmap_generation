@@ -16,7 +16,7 @@ This repository is a fork of upstream World Orogen. It follows upstream `main` f
 
 - Political and game code lives in `politics/`. Edit upstream's files (`js/`, `v2/`, the pages) only at hook points, each marked with a `// fork:` comment, so that merging upstream stays easy.
 - Sync with `git fetch upstream main && git merge upstream/main`, never by rebasing published history. After a merge, run the checks in `v2/README.md` (they need `npm install delaunator pngjs`). The checks' time budgets (`ms <`) are tuned for upstream's desktop and can fail on a slower machine: treat those as timing notes, not regressions.
-- After a change in `politics/`, run `node politics/tools/check-lands.mjs` (it needs the same `npm install`) and look at the Political tab on Generate, as a globe and as a map, on a desktop and at a phone's width.
+- After a change in `politics/`, run `node politics/tools/check-lands.mjs` and `node politics/tools/check-countries.mjs` (they need the same `npm install`) and look at the Political tab and the side panel's Political section on Generate, as a globe and as a map, on a desktop and at a phone's width.
 - Don't change `CNAME` or publish GitHub releases from this fork (a release triggers the Pages deploy) unless the fork gets its own domain.
 - `VISION.md` stays upstream's. The fork's goals go in `FORK.md`.
 

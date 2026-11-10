@@ -130,9 +130,14 @@ Names come after cultures on purpose, so nothing is named twice.
   Political view"), checked by `node politics/tools/check-lands.mjs`. Known limits: the Political view is on Generate
   only (not Import or Evolution); it reads the first picture's ground, not the finished world's lakes; on a world that
   is mostly land, the number of shut-in seas can differ between Details.
-- **S2: Cultures.** The per-continent picker (one or two of nine) and the two-culture geographic split.
-- **S3: Borders.** Seeds from the food layer, growth by travel cost, the country-count slider, the political map view.
-- **S4: Names.** Nine name generators, generate-all, edit and lock.
+- **S2: Cultures.** Done (2026-11-10). The picker in the Political section; a continent of two is divided along its
+  hardest ground to cross (`politics/countries.js` divideContinent). Each continent starts with one culture drawn by the
+  seed, so the flow works with no clicks.
+- **S3: Borders.** Done (2026-11-10). `politics/countries.js` (how: `docs/generate.md`, "The Political view"), checked
+  by `node politics/tools/check-countries.mjs`. Known limits: rivers do not shape borders yet; the countries are made
+  on the page's thread (a short freeze at the highest Details); the choices are kept in the browser by planet code, not
+  in the planet code or link.
+- **S4: Names.** Done (2026-11-10). `politics/names.js`: nine styles, made with the countries, written names kept.
 - **S5: Border editing and picking the player's country.** Starts from `orogen-map-editor.html` once it is in the repo.
 - **S6: Economic and diplomatic setup.** Noted by the owner on 2026-11-10, to build later. It runs once the player's
   country is picked and every other country exists:
